@@ -37,7 +37,8 @@ namespace NewsPortalRestServer
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
 
-            services.AddMvc();
+            services.AddMvc().AddXmlSerializerFormatters();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline

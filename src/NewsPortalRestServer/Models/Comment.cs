@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NewsPortal.Models
+namespace NewsPortalRestServer.Models
 {
-    public class Comment
+    public class Comment : DataModel
     {
         public int id { get; set; }
         public int user_id { get; set; }
