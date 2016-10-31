@@ -16,8 +16,7 @@ namespace NewsPortalRestServer.Controllers
     [Route("[controller]")]
     public class ApiController : Controller
     {
-        DBProvider dbProvider;
-        Dictionary<string, Type> typeMap;      
+        DBProvider dbProvider;        
 
         public ApiController()
         {
@@ -31,10 +30,7 @@ namespace NewsPortalRestServer.Controllers
             catch(DBProviderConnectException)
             {
                 StatusCode(500);
-            }
-
-            //init type map
-            typeMap = TypeMap.GetTypeMap();          
+            }                    
         }
 
         // GET api/users
@@ -72,7 +68,7 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }            
-        }
+        }        
 
         // POST api/users
         [HttpPost("{resource}")]
@@ -82,7 +78,7 @@ namespace NewsPortalRestServer.Controllers
             DataModel requestModel;            
             try
             {
-                requestModel = (DataModel)RequestData.ToObject(typeMap[resource]);
+                requestModel = (DataModel)RequestData.ToObject(ResourceMap.GetResourceType(resource));
             }
             catch
             {
@@ -109,7 +105,7 @@ namespace NewsPortalRestServer.Controllers
             DataModel requestModel;
             try
             {
-                requestModel = (DataModel)RequestData.ToObject(typeMap[resource]);
+                requestModel = (DataModel)RequestData.ToObject(ResourceMap.GetResourceType(resource));
             }
             catch
             {
