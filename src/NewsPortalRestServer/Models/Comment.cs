@@ -10,6 +10,7 @@ namespace NewsPortalRestServer.Models
         public int id { get; set; }
         public int user_id { get; set; }
         public int article_id { get; set; }
-        public DateTime date { get; set; }
+        public DateTime pub_date { get; set; }
+        public string text { get; set; }
     }
 }

@@ -53,12 +53,12 @@ namespace NewsPortalRestServer.Controllers
         }
 
         // GET api/users/3
-        [HttpGet("{source}/{id:int}")]
-        public IActionResult Get(string source, int id)
+        [HttpGet("{resource}/{id:int}")]
+        public IActionResult Get(string resource, int id)
         {
             try
             {
-                return Json(dbProvider.Select("SELECT * FROM " + source + " WHERE id='" + id.ToString() + "'"));
+                return Json(dbProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
             }
             catch (Npgsql.PostgresException)
             {
@@ -68,7 +68,25 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }            
-        }        
+        }
+
+        // GET api/users/3/comments
+        [HttpGet("{resource}/{id:int}/{subResource}")]
+        public IActionResult Get(string resource, int id, string subResource)
+        {
+            try
+            {
+                return Json(dbProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.GetResourceFK(resource) + "=" + id.ToString() ));
+            }
+            catch (Npgsql.PostgresException)
+            {
+                return StatusCode(400);
+            }
+            catch (DBProviderExecuteException)
+            {
+                return StatusCode(500);
+            }
+        }
 
         // POST api/users
         [HttpPost("{resource}")]

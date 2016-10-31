@@ -9,7 +9,7 @@ namespace NewsPortalRestServer.Models
     {
         public int id { get; set; }
         public string title { get; set; }
-        public DateTime timestamp { get; set; }
+        public DateTime pub_date { get; set; }
         public int source_id { get; set; }
         public int category_id { get; set; }
         public string article_text { get; set; }
