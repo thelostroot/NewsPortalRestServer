@@ -31,16 +31,10 @@ namespace NewsPortalRestServer.Controllers
             catch(DBProviderConnectException)
             {
                 StatusCode(500);
-            }            
+            }
 
             //init type map
-            typeMap = new Dictionary<string, Type>();
-            typeMap.Add("articles", typeof(Article));
-            typeMap.Add("categories", typeof(Category));
-            typeMap.Add("comments", typeof(Comment));
-            typeMap.Add("sources", typeof(Source));
-            typeMap.Add("tags", typeof(Tag));
-            typeMap.Add("users", typeof(User));            
+            typeMap = TypeMap.GetTypeMap();          
         }
 
         // GET api/users

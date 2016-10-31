@@ -5,18 +5,24 @@ using System.Threading.Tasks;
 
 namespace NewsPortalRestServer.Models
 {
-    public class TypeMap
+    public static class TypeMap
     {
-        Dictionary<string, DataModel> map;
-        public TypeMap()
+        static Dictionary<string, Type>  typeMap;
+        static TypeMap()
         {
-            map = new Dictionary<string, DataModel>();
-            map.Add("articles", new Article());
-            map.Add("categories", new Category());
-            map.Add("comments", new Comment());
-            map.Add("sources", new Source());
-            map.Add("tags", new Tag());
-            map.Add("users", new User());
+            //init type map
+            typeMap = new Dictionary<string, Type>();
+            typeMap.Add("articles", typeof(Article));
+            typeMap.Add("categories", typeof(Category));
+            typeMap.Add("comments", typeof(Comment));
+            typeMap.Add("sources", typeof(Source));
+            typeMap.Add("tags", typeof(Tag));
+            typeMap.Add("users", typeof(User));
+        }
+
+        public static Dictionary<string, Type> GetTypeMap()
+        {
+            return typeMap;
         }
     }
 }
