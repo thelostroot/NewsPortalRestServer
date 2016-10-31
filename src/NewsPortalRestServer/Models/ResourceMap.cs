@@ -29,7 +29,7 @@ namespace NewsPortalRestServer.Models
             }
             catch
             {
-                throw new ResourceMapNameNotFoundException();
+                return null;
             }
         }
 
@@ -41,7 +41,7 @@ namespace NewsPortalRestServer.Models
             }
             catch
             {
-                throw new ResourceMapNameNotFoundException();
+                return "";
             }
         }
     }
