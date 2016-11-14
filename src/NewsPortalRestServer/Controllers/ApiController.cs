@@ -10,27 +10,17 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using System.ComponentModel;
 using NewsPortalRestServer.Service;
+using NewsPortalRestServer;
 
 namespace NewsPortalRestServer.Controllers
 {
     [Route("[controller]")]
     public class ApiController : Controller
-    {
-        DBProvider dbProvider;        
+    {        
 
         public ApiController()
         {
-            // init db provider
-            dbProvider = new DBProvider();
-
-            try
-            {
-                dbProvider.Connect("localhost", "5432", "postgres", "1", "ASP");
-            }
-            catch(DBProviderConnectException)
-            {
-                StatusCode(500);
-            }                    
+           
         }
 
         // GET api/users
@@ -39,7 +29,7 @@ namespace NewsPortalRestServer.Controllers
         {
             try
             {
-                return Json(dbProvider.Select("SELECT * FROM " + resource));
+                return Json(DBProvider.Select("SELECT * FROM " + resource));
             }
             catch(Npgsql.PostgresException)
             {
@@ -58,7 +48,7 @@ namespace NewsPortalRestServer.Controllers
         {
             try
             {
-                return Json(dbProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
+                return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
             }
             catch (Npgsql.PostgresException)
             {
@@ -76,7 +66,7 @@ namespace NewsPortalRestServer.Controllers
         {
             try
             {
-                return Json(dbProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.GetResourceFK(resource) + "=" + id.ToString() ));
+                return Json(DBProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.GetResourceFK(resource) + "=" + id.ToString() ));
             }
             catch (Npgsql.PostgresException)
             {
@@ -86,7 +76,7 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }
-        }
+        }       
 
         // POST api/users
         [HttpPost("{resource}")]
@@ -106,7 +96,7 @@ namespace NewsPortalRestServer.Controllers
             int insertID=0;
             try
             {
-                insertID = dbProvider.Insert(resource, requestModel);
+                insertID = DBProvider.Insert(resource, requestModel);
             }
             catch(DBProviderExecuteException)
             {
@@ -132,7 +122,7 @@ namespace NewsPortalRestServer.Controllers
 
             try
             {
-                dbProvider.Update(resource, "id=" + id.ToString() + "", requestModel);
+                DBProvider.Update(resource, "id=" + id.ToString() + "", requestModel);
             }
             catch(DBProviderExecuteException)
             {
@@ -148,7 +138,7 @@ namespace NewsPortalRestServer.Controllers
         {
             try
             {
-                dbProvider.Delete(resource, "id='" + id.ToString() + "'");
+                DBProvider.Delete(resource, "id='" + id.ToString() + "'");
                 return Json(new KeyValuePair<string, int>(key: "delete id", value: id));
             }
             catch (Npgsql.PostgresException)

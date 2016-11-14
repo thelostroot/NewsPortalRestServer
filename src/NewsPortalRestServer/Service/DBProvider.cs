@@ -9,18 +9,21 @@ using System.Threading.Tasks;
 
 namespace NewsPortalRestServer.Service
 {
-    public class DBProvider
+    public static class DBProvider
     {
-        private NpgsqlConnection conn;
+        private static NpgsqlConnection conn;
 
         private enum QueryType { Insert = 1, Update = 2}
-        public DBProvider()
-        {
 
-        }
-
-        public void Connect(string server, string port, string user, string pass, string database)
+        static DBProvider()
         {
+            // to config
+            string server = "localhost";
+            string port = "5432";
+            string user = "postgres";
+            string pass = "1";
+            string database = "ASP";
+            
             try
             {
                 conn = new NpgsqlConnection("Server=" + server +
@@ -29,7 +32,6 @@ namespace NewsPortalRestServer.Service
                                        ";Password=" + pass +
                                        ";Database=" + database +
                                        ";");
-                conn.Open();
             }
             catch
             {
@@ -38,7 +40,7 @@ namespace NewsPortalRestServer.Service
            
         }
 
-        private NpgsqlCommand BuildQuery(QueryType queryType, string table, Dictionary<string, object> data, string where="")
+        private static NpgsqlCommand BuildQuery(QueryType queryType, string table, Dictionary<string, object> data, string where="")
         {
             string q="";
             
@@ -67,7 +69,7 @@ namespace NewsPortalRestServer.Service
             return cmd;
         }      
 
-        private Dictionary<string, object> GetModelData(DataModel model)
+        private static Dictionary<string, object> GetModelData(DataModel model)
         {
             Dictionary<string, object> data = new Dictionary<string, object>();
 
@@ -79,7 +81,7 @@ namespace NewsPortalRestServer.Service
             return data;
         }
        
-        private string BuildInsertParamString(Dictionary<string, object> data)
+        private static string BuildInsertParamString(Dictionary<string, object> data)
         {  
             string s = " (";
 
@@ -93,7 +95,7 @@ namespace NewsPortalRestServer.Service
             return s;
         }
 
-        private string BuildUpdateParamString(Dictionary<string, object> data)
+        private static string BuildUpdateParamString(Dictionary<string, object> data)
         {
             string s = " SET ";           
 
@@ -104,15 +106,24 @@ namespace NewsPortalRestServer.Service
             return s;
         } 
 
-        public List<Dictionary<string, object>> Select(string q)
+        public static List<Dictionary<string, object>> Select(string q)
         {            
             List<Dictionary<string, object>> res = new List<Dictionary<string, object>>();
-            NpgsqlDataReader dr;
+            NpgsqlDataReader dr=null;
             try
             {
+                conn.Open();
                 NpgsqlCommand cmd = new NpgsqlCommand(q, conn); 
                 
                 dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    Dictionary<string, object> row = new Dictionary<string, object>();
+                    for (int i = 0; i < dr.FieldCount; i++)
+                        row.Add(dr.GetName(i), dr[i]);
+                    res.Add(row);
+                }
             }
             catch(Npgsql.PostgresException ex)
             {
@@ -124,26 +135,21 @@ namespace NewsPortalRestServer.Service
             }
             finally
             {
-                conn.Clone();
-            }             
-
-            while (dr.Read())
-            {
-                Dictionary<string, object> row = new Dictionary<string, object>();
-                for (int i = 0; i < dr.FieldCount; i++)
-                    row.Add(dr.GetName(i), dr[i]);
-                res.Add(row);
+                conn.Close();
             }            
+
+            conn.Close();
             return res;
         }
 
-        public int Insert(string table, DataModel model)
+        public static int Insert(string table, DataModel model)
         {
             NpgsqlCommand cmd = BuildQuery(QueryType.Insert, table, GetModelData(model));
 
             int insertID;
             try
-            {                
+            {
+                conn.Open();
                 NpgsqlDataReader dr = cmd.ExecuteReader();
                 dr.Read();
                 insertID = Convert.ToInt32(dr[0]);
@@ -157,15 +163,17 @@ namespace NewsPortalRestServer.Service
                 conn.Close();
             }
 
+
             return insertID;
         }
 
-        public void Update(string table, string where, DataModel model)
+        public static void Update(string table, string where, DataModel model)
         {
             NpgsqlCommand cmd =  BuildQuery(QueryType.Update, table, GetModelData(model), where);
             
             try
-            {                
+            {
+                conn.Open();
                 NpgsqlDataReader dr = cmd.ExecuteReader();
             }
             catch
@@ -178,11 +186,12 @@ namespace NewsPortalRestServer.Service
             }            
         }
 
-        public void Delete(string table, string where)
+        public static void Delete(string table, string where)
         {
             string q = "DELETE FROM " + table + " WHERE " + where;
             try
             {
+                conn.Open();
                 NpgsqlCommand command = new NpgsqlCommand(q, conn);
                 NpgsqlDataReader dr = command.ExecuteReader();
             }

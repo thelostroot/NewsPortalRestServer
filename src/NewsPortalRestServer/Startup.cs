@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using NewsPortalRestServer.Controllers;
 
 namespace NewsPortalRestServer
 {
     public class Startup
-    {
+    {        
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -25,9 +28,16 @@ namespace NewsPortalRestServer
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
 
+            var confBuilder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("conf.json");
+            ConcenctionConfiguration = confBuilder.Build();
+
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
+
+        public IConfiguration ConcenctionConfiguration { get; set; }
 
         public IConfigurationRoot Configuration { get; }
 
@@ -49,9 +59,10 @@ namespace NewsPortalRestServer
 
             app.UseApplicationInsightsRequestTelemetry();
 
-            app.UseApplicationInsightsExceptionTelemetry();
+            app.UseApplicationInsightsExceptionTelemetry();            
 
             app.UseMvc();
         }
+       
     }
 }
