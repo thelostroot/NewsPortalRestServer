@@ -24,28 +24,31 @@ namespace NewsPortalRestServer.Controllers
         }
 
         // GET api/users
-        [HttpGet("{resource}")]
-        public IActionResult Get(string resource)
-        {
+        [HttpGet("{resource:regex(^[[a-z]]+$)}")]
+        public IActionResult GetAll(string resource)
+        {      
             try
             {
-                return Json(DBProvider.Select("SELECT * FROM " + resource));
+                // Check filter query
+                if (Request.Query.Count > 0)
+                    return Json(DBProvider.SelectByFilter(resource, Request.Query.ToList() ));
+                        
+                return Json(DBProvider.Select("SELECT * FROM " + resource));                    
             }
-            catch(Npgsql.PostgresException)
+            catch (Npgsql.PostgresException)
             {
                 return StatusCode(400);
             }
-            catch(DBProviderExecuteException)
+            catch (DBProviderExecuteException)
             {
                 return StatusCode(500);
-            }
-            
+            }          
         }
 
         // GET api/users/3
-        [HttpGet("{resource}/{id:int}")]
-        public IActionResult Get(string resource, int id)
-        {
+        [HttpGet("{resource:regex(^[[a-z]]+$)}/{id:int}")]
+        public IActionResult GetById(string resource, int id)
+        {            
             try
             {
                 return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
@@ -54,19 +57,19 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(400);
             }
-            catch(DBProviderExecuteException)
+            catch (DBProviderExecuteException)
             {
                 return StatusCode(500);
-            }            
+            }         
         }
 
         // GET api/users/3/comments
         [HttpGet("{resource}/{id:int}/{subResource}")]
-        public IActionResult Get(string resource, int id, string subResource)
+        public IActionResult GetSubResource(string resource, int id, string subResource)
         {
             try
             {
-                return Json(DBProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.GetResourceFK(resource) + "=" + id.ToString() ));
+                return Json(DBProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.TryGetResourceFK(resource) + "=" + id.ToString() ));
             }
             catch (Npgsql.PostgresException)
             {
@@ -76,17 +79,17 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }
-        }       
+        }        
 
         // POST api/users
         [HttpPost("{resource}")]
-        public IActionResult Post(string resource, [FromBody] JObject RequestData)
+        public IActionResult Add(string resource, [FromBody] JObject RequestData)
         {
 
             DataModel requestModel;            
             try
             {
-                requestModel = (DataModel)RequestData.ToObject(ResourceMap.GetResourceType(resource));
+                requestModel = (DataModel)RequestData.ToObject(ResourceMap.TryGetResourceType(resource));
             }
             catch
             {
@@ -108,12 +111,12 @@ namespace NewsPortalRestServer.Controllers
 
         // PUT api/users/3
         [HttpPut("{resource}/{id:int}")]
-        public IActionResult Put(string resource, int id, [FromBody] JObject RequestData)
+        public IActionResult Update(string resource, int id, [FromBody] JObject RequestData)
         {
             DataModel requestModel;
             try
             {
-                requestModel = (DataModel)RequestData.ToObject(ResourceMap.GetResourceType(resource));
+                requestModel = (DataModel)RequestData.ToObject(ResourceMap.TryGetResourceType(resource));
             }
             catch
             {
@@ -133,7 +136,7 @@ namespace NewsPortalRestServer.Controllers
         }
 
         // DELETE api/users/3
-        [HttpDelete("{resource}/{id:int}")]
+        [HttpDelete("{resource:regex(^[[a-z]]+$)}/{id:int}")]
         public IActionResult Delete(string resource, int id)
         {
             try
@@ -149,6 +152,12 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }           
-        }        
+        }
+        
+        [NonAction]
+        private bool CheckResourceName(string resource)
+        {
+            return false;
+        }
     }
 }

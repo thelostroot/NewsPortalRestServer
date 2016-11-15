@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
 
 namespace NewsPortalRestServer.Service
 {
@@ -38,7 +39,7 @@ namespace NewsPortalRestServer.Service
                 throw new DBProviderConnectException("Подключение к базе данных не удалось!");
             }
            
-        }
+        }        
 
         private static NpgsqlCommand BuildQuery(QueryType queryType, string table, Dictionary<string, object> data, string where="")
         {
@@ -104,17 +105,16 @@ namespace NewsPortalRestServer.Service
             s = s.Substring(0, s.Length - 2) + " ";
 
             return s;
-        } 
-
-        public static List<Dictionary<string, object>> Select(string q)
-        {            
+        }
+        
+        private static List<Dictionary<string, object>> SelectFromDB(NpgsqlCommand cmd)
+        {
             List<Dictionary<string, object>> res = new List<Dictionary<string, object>>();
-            NpgsqlDataReader dr=null;
+            NpgsqlDataReader dr;
             try
             {
-                conn.Open();
-                NpgsqlCommand cmd = new NpgsqlCommand(q, conn); 
-                
+                conn.Open();               
+
                 dr = cmd.ExecuteReader();
 
                 while (dr.Read())
@@ -125,7 +125,7 @@ namespace NewsPortalRestServer.Service
                     res.Add(row);
                 }
             }
-            catch(Npgsql.PostgresException ex)
+            catch (Npgsql.PostgresException ex)
             {
                 throw ex;
             }
@@ -136,10 +136,44 @@ namespace NewsPortalRestServer.Service
             finally
             {
                 conn.Close();
-            }            
+            }
 
             conn.Close();
             return res;
+        }
+
+        public static List<Dictionary<string, object>> Select(string q)
+        {
+            NpgsqlCommand cmd = new NpgsqlCommand(q, conn);
+            return SelectFromDB(cmd);
+        }
+
+        public static List<Dictionary<string, object>> SelectByFilter(string resource, List<KeyValuePair<string, StringValues>> filters)
+        {
+            string q = "SELECT * FROM " + resource + " WHERE ";            
+
+            // Add markers
+            var pars = new  List<string>();
+            int i = 0;
+            foreach (var item in filters)
+                pars.Add(item.Key + "= @p" + (++i).ToString());
+                //pars.Add("@p" + (++i).ToString() + "= @p" + (++i).ToString());
+
+            // Create where string
+            q = q + string.Join(" and ", pars);
+
+            // create command
+            NpgsqlCommand cmd = new NpgsqlCommand(q, conn);
+
+            // add params
+            i = 0;
+            foreach (var item in filters)
+            {
+                //cmd.Parameters.AddWithValue("@p" + (++i).ToString(), item.Key );
+                cmd.Parameters.AddWithValue("@p" + (++i).ToString(), item.Value.ToString() );
+            }            
+
+            return SelectFromDB(cmd);
         }
 
         public static int Insert(string table, DataModel model)

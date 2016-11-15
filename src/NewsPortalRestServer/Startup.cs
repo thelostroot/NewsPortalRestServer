@@ -28,16 +28,9 @@ namespace NewsPortalRestServer
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
 
-            var confBuilder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("conf.json");
-            ConcenctionConfiguration = confBuilder.Build();
-
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
-
-        public IConfiguration ConcenctionConfiguration { get; set; }
 
         public IConfigurationRoot Configuration { get; }
 

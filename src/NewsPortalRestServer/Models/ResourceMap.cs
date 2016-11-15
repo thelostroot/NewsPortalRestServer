@@ -22,7 +22,7 @@ namespace NewsPortalRestServer.Models
             typeMap.Add("users", new Resource(typeof(User), "user_id") );
         }
 
-        public static Type GetResourceType(string name)
+        public static Type TryGetResourceType(string name)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace NewsPortalRestServer.Models
             }
         }
 
-        public static string GetResourceFK(string name)
+        public static string TryGetResourceFK(string name)
         {
             try
             {
