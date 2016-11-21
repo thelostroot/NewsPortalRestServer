@@ -138,7 +138,6 @@ namespace NewsPortalRestServer.Service
                 conn.Close();
             }
 
-            conn.Close();
             return res;
         }
 

@@ -23,8 +23,8 @@ namespace NewsPortalRestServer.Controllers
            
         }
 
-        // GET api/users
-        [HttpGet("{resource:regex(^[[a-z]]+$)}")]
+        // GET api/users/?name=denis&age=22
+        [HttpGet("{resource:regex(^[[a-zA-Z]]+$)}")]
         public IActionResult GetAll(string resource)
         {      
             try
@@ -46,7 +46,7 @@ namespace NewsPortalRestServer.Controllers
         }
 
         // GET api/users/3
-        [HttpGet("{resource:regex(^[[a-z]]+$)}/{id:int}")]
+        [HttpGet("{resource:regex(^[[a-zA-Z]]+$)}/{id:int}")]
         public IActionResult GetById(string resource, int id)
         {            
             try
@@ -69,6 +69,19 @@ namespace NewsPortalRestServer.Controllers
         {
             try
             {
+                // Check expand query
+                if (subResource == "expand")
+                {
+                    // Try find expand query
+                    string q = SpecialQueries.TryGetExpandQuery(resource);
+
+                    if (q != null)
+                        return Json(DBProvider.Select(q));
+                    else
+                        return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
+                 }
+
+
                 return Json(DBProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.TryGetResourceFK(resource) + "=" + id.ToString() ));
             }
             catch (Npgsql.PostgresException)
@@ -136,7 +149,7 @@ namespace NewsPortalRestServer.Controllers
         }
 
         // DELETE api/users/3
-        [HttpDelete("{resource:regex(^[[a-z]]+$)}/{id:int}")]
+        [HttpDelete("{resource:regex(^[[a-zA-Z]]+$)}/{id:int}")]
         public IActionResult Delete(string resource, int id)
         {
             try
@@ -152,12 +165,7 @@ namespace NewsPortalRestServer.Controllers
             {
                 return StatusCode(500);
             }           
-        }
+        }       
         
-        [NonAction]
-        private bool CheckResourceName(string resource)
-        {
-            return false;
-        }
     }
 }
