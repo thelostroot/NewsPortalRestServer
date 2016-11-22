@@ -63,9 +63,9 @@ namespace NewsPortalRestServer.Controllers
             }         
         }
 
-        // GET api/articles/1/expand
-        [HttpGet("{resource}/{id:int}/expand")]
-        public IActionResult ExpandGet(string resource, int id)
+        // GET api/articles/expand
+        [HttpGet("{resource}/expand")]
+        public IActionResult ExpandGet(string resource)
         {
             try
             {                
@@ -75,7 +75,7 @@ namespace NewsPortalRestServer.Controllers
                 if (q != null)
                     return Json(DBProvider.Select(q));
                 else
-                    return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));                
+                    return Json(DBProvider.Select("SELECT * FROM " + resource));                
             }
             catch (Npgsql.PostgresException)
             {
