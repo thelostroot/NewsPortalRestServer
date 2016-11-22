@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http;
 
 namespace NewsPortalRestServer.Service
 {
@@ -94,7 +95,7 @@ namespace NewsPortalRestServer.Service
             s = s + "(@" + string.Join(",@", data.Keys) + "); ";
            
             return s;
-        }
+        }        
 
         private static string BuildUpdateParamString(Dictionary<string, object> data)
         {
@@ -173,7 +174,7 @@ namespace NewsPortalRestServer.Service
             }            
 
             return SelectFromDB(cmd);
-        }
+        }        
 
         public static int Insert(string table, DataModel model)
         {

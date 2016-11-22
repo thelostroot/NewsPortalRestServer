@@ -63,25 +63,63 @@ namespace NewsPortalRestServer.Controllers
             }         
         }
 
+        // GET api/articles/1/expand
+        [HttpGet("{resource}/{id:int}/expand")]
+        public IActionResult ExpandGet(string resource, int id)
+        {
+            try
+            {                
+                // Try find expand query
+                string q = SpecialQueries.TryGetExpandQuery(resource);
+
+                if (q != null)
+                    return Json(DBProvider.Select(q));
+                else
+                    return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));                
+            }
+            catch (Npgsql.PostgresException)
+            {
+                return StatusCode(400);
+            }
+            catch (DBProviderExecuteException)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        // GET api/comments/pub_date?start=2016.01.27&end=2016.11.29
+        [HttpGet("{resource}/{field}")]
+        public IActionResult RangeGet(string resource, string field)
+        {
+            try
+            {
+                if (Request.Query.ContainsKey("start") || Request.Query.ContainsKey("end"))
+                {
+                    var q = SpecialQueries.TryGetRangeQuery(resource, field, Request.Query);
+                    if(q == null)
+                        return StatusCode(400);
+
+                    return Json(DBProvider.Select(q));
+                }
+                else
+                    return StatusCode(400);
+            }
+            catch (Npgsql.PostgresException)
+            {
+                return StatusCode(400);
+            }
+            catch (DBProviderExecuteException)
+            {
+                return StatusCode(500);
+            }
+        }
+
         // GET api/users/3/comments
-        [HttpGet("{resource}/{id:int}/{subResource}")]
+        [HttpGet("{resource}/{id:int}/{subResource:regex(^[[a-zA-Z_]]+$)}")]
         public IActionResult GetSubResource(string resource, int id, string subResource)
         {
             try
             {
-                // Check expand query
-                if (subResource == "expand")
-                {
-                    // Try find expand query
-                    string q = SpecialQueries.TryGetExpandQuery(resource);
-
-                    if (q != null)
-                        return Json(DBProvider.Select(q));
-                    else
-                        return Json(DBProvider.Select("SELECT * FROM " + resource + " WHERE id='" + id.ToString() + "'"));
-                 }
-
-
                 return Json(DBProvider.Select("SELECT * FROM " + subResource + " WHERE " + ResourceMap.TryGetResourceFK(resource) + "=" + id.ToString() ));
             }
             catch (Npgsql.PostgresException)
@@ -98,10 +136,9 @@ namespace NewsPortalRestServer.Controllers
         [HttpPost("{resource}")]
         public IActionResult Add(string resource, [FromBody] JObject RequestData)
         {
-
-            DataModel requestModel;            
+            DataModel requestModel;
             try
-            {
+            {                
                 requestModel = (DataModel)RequestData.ToObject(ResourceMap.TryGetResourceType(resource));
             }
             catch
